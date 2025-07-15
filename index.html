@@ -1,250 +1,606 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8" />
-  <title>第14回（第1组）</title>
-  <style>
-    body {
-      background-color: #fdfcf5;
-      font-family: "Microsoft YaHei", "Arial", sans-serif;
-      text-align: center;
-      margin: 0;
-      padding: 0;
-    }
-    h1 {
-      font-size: 3em;
-      margin: 20px 0;
-    }
-    #start-btn {
-      font-family: "Microsoft YaHei";
-      background-color: red;
-      color: white;
-      padding: 10px 20px;
-      font-size: 16px;
-      border: none;
-      border-radius: 10px;
-      cursor: pointer;
-      margin-bottom: 10px;
-    }
-    #game {
-      display: none;
-      justify-content: center;
-      gap: 20px;
-      max-width: 1100px;
-      margin: 0 auto;
-      flex-wrap: nowrap;
-      min-height: 500px;
-      position: relative;
-    }
-    .column {
-      display: flex;
-      flex-wrap: wrap;
-      width: 50%;
-      justify-content: center;
-    }
-    .bubble {
-      width: 100px;
-      height: 100px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 10px;
-      border-radius: 50%;
-      color: white;
-      font-weight: bold;
-      font-size: 16px;
-      text-align: center;
-      padding: 10px;
-      box-sizing: border-box;
-      cursor: pointer;
-      box-shadow: inset -4px -4px 10px rgba(0,0,0,0.2), inset 4px 4px 10px rgba(255,255,255,0.6);
-      user-select: none;
-      transition: transform 0.2s, box-shadow 0.2s;
-    }
-    .bubble:hover {
-      transform: scale(1.05);
-    }
-    .selected {
-      box-shadow: 0 0 10px 4px gold;
-    }
-    .chinese {
-      background-color: #b3cde0;
-    }
-    .japanese {
-      background-color: #e5b3b3;
-    }
-    #timer {
-      font-size: 1.5em;
-      margin-top: 10px;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>単語かるた - 日本語学習ゲーム</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'YuMincho', 'Yu Mincho', 'Hiragino Mincho ProN', 'MS PMincho', serif;
+            background-color: #fdf6e3;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><path fill="none" stroke="%23d4c69e" stroke-width="0.5" d="M20,20 Q50,30 80,20 T140,20 Q170,30 180,20 M20,60 Q30,50 40,60 T60,60 Q70,50 80,60 T100,60 Q110,50 120,60 T140,60 Q150,50 160,60 T180,60 M20,100 Q50,110 80,100 T140,100 Q170,110 180,100 M20,140 Q30,130 40,140 T60,140 Q70,130 80,140 T100,140 Q110,130 120,140 T140,140 Q150,130 160,140 T180,140 M20,180 Q50,190 80,180 T140,180 Q170,190 180,180" /></svg>');
+            background-size: 200px;
+            min-height: 100vh;
+            padding: 15px;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        
+        /* タイトルスタイル */
+        .title {
+            text-align: center;
+            font-size: 2.2rem;
+            font-weight: bold;
+            margin: 20px 0 30px;
+            font-family: 'YuKyokasho', 'Yu Kyokasho', 'FOT-スーラ Pro B', sans-serif;
+            color: #000;
+        }
+        
+        /* 名前入力画面 */
+        .input-section {
+            text-align: center;
+            padding: 20px;
+            background-color: rgba(255, 255, 255, 0.85);
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+        }
+        
+        .input-prompt {
+            font-family: 'Microsoft YaHei', '微软雅黑', sans-serif;
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            color: #000;
+        }
+        
+        .name-input {
+            width: 80%;
+            padding: 12px 15px;
+            font-size: 1.1rem;
+            border: 2px solid #ccc;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-family: 'Microsoft YaHei', '微软雅黑', sans-serif;
+        }
+        
+        .confirm-btn {
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 1.1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: 'Microsoft YaHei', '微软雅黑', sans-serif;
+            transition: background-color 0.3s;
+        }
+        
+        .confirm-btn:hover {
+            background-color: #c0392b;
+        }
+        
+        /* ゲーム画面 */
+        .game-section, .result-section, .data-section {
+            display: none;
+            background-color: rgba(255, 255, 255, 0.85);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+        }
+        
+        /* 問題カード */
+        .question-card {
+            background-color: white;
+            border: 2px solid #8B4513;
+            border-radius: 12px;
+            padding: 25px 15px;
+            margin: 0 auto 30px;
+            text-align: center;
+            font-size: 1.8rem;
+            font-weight: bold;
+            max-width: 300px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* 選択肢カード */
+        .options-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .option-card {
+            background-color: white;
+            border: 2px solid #2E8B57;
+            border-radius: 10px;
+            padding: 18px 10px;
+            text-align: center;
+            font-family: 'Microsoft YaHei', '微软雅黑', sans-serif;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .option-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.15);
+        }
+        
+        /* 正解・不正解表示 */
+        .feedback {
+            text-align: center;
+            font-family: 'Microsoft YaHei', '微软雅黑', sans-serif;
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: #e74c3c;
+            margin: 15px 0;
+            min-height: 30px;
+        }
+        
+        /* 次の問題ボタン */
+        .next-btn {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 1.1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: 'Microsoft YaHei', '微软雅黑', sans-serif;
+            display: block;
+            margin: 20px auto;
+            transition: background-color 0.3s;
+        }
+        
+        .next-btn:hover {
+            background-color: #2980b9;
+        }
+        
+        /* 結果画面 */
+        .result-summary {
+            text-align: center;
+            margin: 20px 0;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        
+        .result-comment {
+            text-align: center;
+            font-size: 1.3rem;
+            margin: 20px 0;
+            font-weight: bold;
+            color: #8B4513;
+        }
+        
+        .mistakes-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 25px 0;
+            font-size: 1rem;
+        }
+        
+        .mistakes-table th {
+            background-color: #2E8B57;
+            color: white;
+            padding: 12px;
+            text-align: center;
+        }
+        
+        .mistakes-table td {
+            padding: 10px;
+            text-align: center;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .mistakes-table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        
+        /* データ閲覧ボタン */
+        .data-btn {
+            position: fixed;
+            bottom: 15px;
+            left: 15px;
+            background-color: #2E8B57;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            font-size: 0.9rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: 'Microsoft YaHei', '微软雅黑', sans-serif;
+            z-index: 10;
+        }
+        
+        /* データ画面 */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        
+        .data-table th, .data-table td {
+            padding: 12px;
+            text-align: center;
+            border: 1px solid #ddd;
+        }
+        
+        .data-table th {
+            background-color: #3498db;
+            color: white;
+        }
+        
+        .back-btn {
+            background-color: #7f8c8d;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: 'Microsoft YaHei', '微软雅黑', sans-serif;
+            display: block;
+            margin: 20px auto 0;
+        }
+        
+        /* 状態別スタイル */
+        .correct {
+            border-color: #e74c3c !important;
+            color: #e74c3c !important;
+            background-color: #ffebee;
+        }
+        
+        .incorrect {
+            border-color: #3498db !important;
+            color: #3498db !important;
+            background-color: #ebf5fb;
+        }
+        
+        /* プログレスバー */
+        .progress-container {
+            width: 100%;
+            height: 8px;
+            background-color: #e0e0e0;
+            border-radius: 4px;
+            margin: 15px 0;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background-color: #2E8B57;
+            border-radius: 4px;
+            transition: width 0.4s ease;
+        }
+        
+        /* レスポンシブ調整 */
+        @media (max-width: 480px) {
+            .title {
+                font-size: 1.8rem;
+            }
+            
+            .question-card {
+                font-size: 1.5rem;
+                padding: 20px 10px;
+            }
+            
+            .option-card {
+                padding: 15px 8px;
+                font-size: 1rem;
+            }
+            
+            .options-container {
+                gap: 10px;
+            }
+        }
+    </style>
 </head>
 <body>
-  <h1>第14回（第1组）</h1>
-  <button id="start-btn">游戏开始</button>
-  <div id="timer">用时：0 秒</div>
-  <div id="game">
-    <div id="left" class="column"></div>
-    <div id="right" class="column"></div>
-    <div id="result-area" style="display:none; position:absolute; top:50%; left:50%; transform:translate(-50%, -50%);
-      background:rgba(255,255,255,0.95); padding:20px; border-radius:10px; box-shadow:0 0 10px rgba(0,0,0,0.3);">
-      <h2 id="message" style="margin-top:0;"></h2>
-      <div id="result-container"></div>
+    <div class="container">
+        <h1 class="title">🍣 単語かるた 🏯</h1>
+        
+        <!-- 名前入力画面 -->
+        <div id="input-screen" class="input-section">
+            <div class="input-prompt">▼请输入您的姓名</div>
+            <input type="text" id="player-name" class="name-input" placeholder="输入您的名字">
+            <button id="confirm-btn" class="confirm-btn">确认</button>
+        </div>
+        
+        <!-- ゲーム画面 -->
+        <div id="game-screen" class="game-section">
+            <div class="progress-container">
+                <div id="progress-bar" class="progress-bar"></div>
+            </div>
+            
+            <div id="question-card" class="question-card"></div>
+            
+            <div id="options-container" class="options-container"></div>
+            
+            <div id="feedback" class="feedback"></div>
+            
+            <button id="next-btn" class="next-btn">次の問題</button>
+        </div>
+        
+        <!-- 結果画面 -->
+        <div id="result-screen" class="result-section">
+            <div class="result-summary" id="result-summary"></div>
+            <div class="result-comment" id="result-comment"></div>
+            
+            <table class="mistakes-table">
+                <thead>
+                    <tr>
+                        <th>日本語</th>
+                        <th>不正解</th>
+                        <th>正解</th>
+                    </tr>
+                </thead>
+                <tbody id="mistakes-list"></tbody>
+            </table>
+            
+            <button id="restart-btn" class="next-btn">もう一度プレイ</button>
+        </div>
+        
+        <!-- データ閲覧画面 -->
+        <div id="data-screen" class="data-section">
+            <h2 style="text-align: center; margin-bottom: 20px;">プレイデータ</h2>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>名前</th>
+                        <th>正解数</th>
+                        <th>時間</th>
+                    </tr>
+                </thead>
+                <tbody id="data-table-body"></tbody>
+            </table>
+            <button id="data-back-btn" class="back-btn">戻る</button>
+        </div>
+        
+        <button id="data-btn" class="data-btn">データを見る</button>
     </div>
-  </div>
 
-  <audio id="click" src="sound1_click.mp3"></audio>
-  <audio id="correct" src="sound2_correct.mp3"></audio>
-  <audio id="incorrect" src="sound3_incorrect.mp3"></audio>
-
-  <script>
-
-    const vocab = [["コピー", "复印"],
-      ["でんげん", "电源"],
-      ["げんこう", "原稿"],
-      ["おく", "放"],
-      ["スタート", "开始、出发"],
-      ["はじまる", "开始"],
-      ["かみ", "纸"],
-      ["かたづける", "收拾"],
-      ["はたらく", "工作"],
-      ["シャワーをあびる", "洗澡"]];
-    const containerLeft = document.getElementById("left");
-    const containerRight = document.getElementById("right");
-    const timerDisplay = document.getElementById("timer");
-    const startBtn = document.getElementById("start-btn");
-    const gameContainer = document.getElementById("game");
-    const resultArea = document.getElementById("result-area");
-    const message = document.getElementById("message");
-    const resultContainer = document.getElementById("result-container");
-
-    const clickSound = document.getElementById("click");
-    const correctSound = document.getElementById("correct");
-    const incorrectSound = document.getElementById("incorrect");
-
-    let startTime = null;
-    let timerInterval = null;
-    let selected = [];
-    let matches = 0;
-    let totalAttempts = 0;
-    let incorrectPairs = [];
-
-    function shuffle(array) {
-      for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
-      }
-      return array;
-    }
-
-    function updateTimer() {
-      const now = Date.now();
-      timerDisplay.textContent = "用时：" + Math.floor((now - startTime) / 1000) + " 秒";
-    }
-
-    function startGame() {
-      startBtn.style.display = 'none';
-      gameContainer.style.display = 'flex';
-      startTime = Date.now();
-      timerInterval = setInterval(updateTimer, 1000);
-      createGame();
-    }
-
-    function createGame() {
-      const chinese = shuffle(vocab.map(v => { return { text: v[1], lang: 'cn', pair: v[0] }; }));
-      const japanese = shuffle(vocab.map(v => { return { text: v[0], lang: 'jp', pair: v[1] }; }));
-
-      japanese.forEach(item => {
-        const div = document.createElement("div");
-        div.className = "bubble japanese";
-        div.textContent = item.text;
-        div.dataset.pair = item.pair;
-        div.dataset.lang = 'jp';
-        div.onclick = () => handleClick(div);
-        containerLeft.appendChild(div);
-      });
-      chinese.forEach(item => {
-        const div = document.createElement("div");
-        div.className = "bubble chinese";
-        div.textContent = item.text;
-        div.dataset.pair = item.pair;
-        div.dataset.lang = 'cn';
-        div.onclick = () => handleClick(div);
-        containerRight.appendChild(div);
-      });
-    }
-
-    function handleClick(div) {
-      if (!startTime || selected.includes(div) || div.style.visibility === 'hidden') return;
-      clickSound.currentTime = 0;
-      clickSound.play();
-
-      if (selected.length === 1 && selected[0].dataset.lang === div.dataset.lang) {
-        selected[0].classList.remove('selected');
-        selected = [div];
-        div.classList.add('selected');
-        return;
-      }
-
-      if (selected.length < 2) {
-        div.classList.add('selected');
-        selected.push(div);
-      }
-
-      if (selected.length === 2) {
-        const [a, b] = selected;
-        totalAttempts++;
-        if (a.dataset.pair === b.textContent && b.dataset.pair === a.textContent) {
-          setTimeout(() => {
-            correctSound.play();
-            a.style.visibility = 'hidden';
-            b.style.visibility = 'hidden';
-            selected = [];
-            matches++;
-            if (matches === vocab.length) {
-              clearInterval(timerInterval);
-              const timeUsed = Math.floor((Date.now() - startTime) / 1000);
-              const accuracy = Math.round((matches / totalAttempts) * 100);
-              message.textContent = `恭喜你挑战成功！\n正确率：${accuracy}%\n用时：${timeUsed} 秒`;
-
-              if (incorrectPairs.length > 0) {
-                const table = document.createElement('table');
-                table.style.borderCollapse = 'collapse';
-                table.style.margin = '20px auto 0';
-                table.style.fontSize = '18px';
-                table.innerHTML = '<tr><th style="background:#f8cccc;">日语</th><th style="color:red; background:#dceeff;">×</th><th style="color:green; background:#dceeff;">✓</th></tr>';
-                incorrectPairs.forEach(p => {
-                  const row = document.createElement('tr');
-                  row.innerHTML = `<td style="border:1px solid #ccc; padding:8px 12px;">${p.jp}</td>
-                                   <td style="border:1px solid #ccc; padding:8px 12px;">${p.user}</td>
-                                   <td style="border:1px solid #ccc; padding:8px 12px;">${p.correct}</td>`;
-                  table.appendChild(row);
-                });
-                resultContainer.innerHTML = '';
-                resultContainer.appendChild(table);
-              }
-
-              resultArea.style.display = 'block';
+    <script>
+        // 問題データ
+        const wordData = [
+            { japanese: "きょうと", chinese: "京都", options: ["京都", "東京", "首都", "都市"] },
+            { japanese: "ゆっくり", chinese: "慢慢地", options: ["慢慢地", "快快地", "突然", "悄悄地"] },
+            { japanese: "むしあつい", chinese: "闷热", options: ["闷热", "凉爽", "寒冷", "温暖"] },
+            { japanese: "ぼんち", chinese: "盆地", options: ["盆地", "山顶", "山谷", "高原"] },
+            { japanese: "きよみずでら", chinese: "清水寺", options: ["清水寺", "金阁寺", "浅草寺", "东大寺"] },
+            { japanese: "きんかくじ", chinese: "金阁寺", options: ["金阁寺", "清水寺", "龙安寺", "法隆寺"] },
+            { japanese: "うじ", chinese: "宇治", options: ["宇治", "京都", "奈良", "大阪"] },
+            { japanese: "おちつく", chinese: "放松", options: ["放松", "紧张", "兴奋", "疲倦"] },
+            { japanese: "それなら", chinese: "如果那样的话", options: ["如果那样的话", "因为这样", "尽管如此", "另外"] },
+            { japanese: "きっと", chinese: "一定", options: ["一定", "也许", "大概", "可能"] },
+            { japanese: "きにいる", chinese: "喜欢", options: ["喜欢", "讨厌", "在意", "忘记"] },
+            { japanese: "ぞう", chinese: "大象", options: ["大象", "狮子", "老虎", "长颈鹿"] },
+            { japanese: "シャツ", chinese: "衬衫", options: ["衬衫", "裤子", "外套", "裙子"] },
+            { japanese: "ほっかいどう", chinese: "北海道", options: ["北海道", "九州", "四国", "本州"] },
+            { japanese: "タワー", chinese: "塔", options: ["塔", "桥", "大楼", "寺庙"] },
+            { japanese: "きゅうしゅう", chinese: "九州", options: ["九州", "北海道", "四国", "冲绳"] },
+            { japanese: "しんかんせん", chinese: "新干线", options: ["新干线", "地铁", "巴士", "飞机"] },
+            { japanese: "とりにく", chinese: "鸡肉", options: ["鸡肉", "牛肉", "猪肉", "鱼肉"] },
+            { japanese: "ぎゅうにく", chinese: "牛肉", options: ["牛肉", "鸡肉", "猪肉", "羊肉"] },
+            { japanese: "バドミントン", chinese: "羽毛球", options: ["羽毛球", "乒乓球", "网球", "足球"] }
+        ];
+        
+        // ゲーム状態変数
+        let playerName = "";
+        let currentQuestionIndex = 0;
+        let correctAnswers = 0;
+        let startTime = 0;
+        let endTime = 0;
+        let mistakes = [];
+        let gameData = JSON.parse(localStorage.getItem('wordKarutaData')) || [];
+        
+        // DOM要素
+        const inputScreen = document.getElementById('input-screen');
+        const gameScreen = document.getElementById('game-screen');
+        const resultScreen = document.getElementById('result-screen');
+        const dataScreen = document.getElementById('data-screen');
+        const playerNameInput = document.getElementById('player-name');
+        const confirmBtn = document.getElementById('confirm-btn');
+        const questionCard = document.getElementById('question-card');
+        const optionsContainer = document.getElementById('options-container');
+        const feedback = document.getElementById('feedback');
+        const nextBtn = document.getElementById('next-btn');
+        const resultSummary = document.getElementById('result-summary');
+        const resultComment = document.getElementById('result-comment');
+        const mistakesList = document.getElementById('mistakes-list');
+        const restartBtn = document.getElementById('restart-btn');
+        const dataBtn = document.getElementById('data-btn');
+        const dataTableBody = document.getElementById('data-table-body');
+        const dataBackBtn = document.getElementById('data-back-btn');
+        const progressBar = document.getElementById('progress-bar');
+        
+        // 名前確認ボタン
+        confirmBtn.addEventListener('click', () => {
+            if (playerNameInput.value.trim() === "") {
+                alert("名前を入力してください");
+                return;
             }
-          }, 300);
-        } else {
-          incorrectPairs.push({
-            jp: a.dataset.lang === 'jp' ? a.textContent : b.textContent,
-            user: a.dataset.lang === 'cn' ? a.textContent : b.textContent,
-            correct: a.dataset.lang === 'jp' ? a.dataset.pair : b.dataset.pair
-          });
-          setTimeout(() => {
-            incorrectSound.play();
-            a.classList.remove('selected');
-            b.classList.remove('selected');
-            selected = [];
-          }, 600);
+            
+            playerName = playerNameInput.value.trim();
+            inputScreen.style.display = 'none';
+            gameScreen.style.display = 'block';
+            startGame();
+        });
+        
+        // ゲーム開始
+        function startGame() {
+            currentQuestionIndex = 0;
+            correctAnswers = 0;
+            mistakes = [];
+            startTime = new Date().getTime();
+            loadQuestion();
         }
-      }
-    }
-
-    startBtn.addEventListener("click", startGame);
-
-  </script>
+        
+        // 問題読み込み
+        function loadQuestion() {
+            // プログレスバー更新
+            const progress = ((currentQuestionIndex) / wordData.length) * 100;
+            progressBar.style.width = `${progress}%`;
+            
+            const currentQuestion = wordData[currentQuestionIndex];
+            questionCard.textContent = currentQuestion.japanese;
+            
+            // 選択肢をシャッフル
+            const shuffledOptions = [...currentQuestion.options].sort(() => Math.random() - 0.5);
+            
+            // 選択肢を表示
+            optionsContainer.innerHTML = '';
+            shuffledOptions.forEach(option => {
+                const optionCard = document.createElement('div');
+                optionCard.classList.add('option-card');
+                optionCard.textContent = option;
+                optionCard.addEventListener('click', () => checkAnswer(option, currentQuestion.chinese));
+                optionsContainer.appendChild(optionCard);
+            });
+            
+            feedback.textContent = '';
+            nextBtn.style.display = 'none';
+        }
+        
+        // 答えのチェック
+        function checkAnswer(selected, correct) {
+            const optionCards = document.querySelectorAll('.option-card');
+            
+            // 全ての選択肢をクリック不可に
+            optionCards.forEach(card => {
+                card.style.pointerEvents = 'none';
+            });
+            
+            if (selected === correct) {
+                // 正解の場合
+                correctAnswers++;
+                
+                // 選択したカードを赤くする
+                optionCards.forEach(card => {
+                    if (card.textContent === selected) {
+                        card.classList.add('correct');
+                    }
+                });
+                
+                feedback.textContent = '正解！';
+                feedback.style.color = '#e74c3c';
+            } else {
+                // 不正解の場合
+                feedback.textContent = '不正解！';
+                feedback.style.color = '#e74c3c';
+                
+                // 選択したカードを青くする
+                optionCards.forEach(card => {
+                    if (card.textContent === selected) {
+                        card.classList.add('incorrect');
+                    }
+                });
+                
+                // 正解のカードを赤くする
+                optionCards.forEach(card => {
+                    if (card.textContent === correct) {
+                        card.classList.add('correct');
+                    }
+                });
+                
+                // 間違いを記録
+                mistakes.push({
+                    japanese: wordData[currentQuestionIndex].japanese,
+                    selected: selected,
+                    correct: correct
+                });
+            }
+            
+            nextBtn.style.display = 'block';
+        }
+        
+        // 次の問題ボタン
+        nextBtn.addEventListener('click', () => {
+            currentQuestionIndex++;
+            
+            if (currentQuestionIndex < wordData.length) {
+                loadQuestion();
+            } else {
+                endGame();
+            }
+        });
+        
+        // ゲーム終了
+        function endGame() {
+            endTime = new Date().getTime();
+            const timeTaken = Math.floor((endTime - startTime) / 1000);
+            const minutes = Math.floor(timeTaken / 60);
+            const seconds = timeTaken % 60;
+            
+            // 結果を表示
+            resultSummary.textContent = `正解：${correctAnswers}問　時間：${minutes}分${seconds}秒`;
+            
+            // コメントを表示
+            if (correctAnswers === 20) {
+                resultComment.textContent = "すごいっ！すごすぎるっ！！！";
+            } else if (correctAnswers >= 16) {
+                resultComment.textContent = "たいへんよくできました";
+            } else if (correctAnswers >= 10) {
+                resultComment.textContent = "やればできるやん";
+            } else {
+                resultComment.textContent = "次こそは……！";
+            }
+            
+            // 間違い一覧を表示
+            mistakesList.innerHTML = '';
+            mistakes.forEach(mistake => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${mistake.japanese}</td>
+                    <td>${mistake.selected}</td>
+                    <td>${mistake.correct}</td>
+                `;
+                mistakesList.appendChild(row);
+            });
+            
+            // ゲームデータを保存
+            gameData.push({
+                name: playerName,
+                correct: correctAnswers,
+                time: `${minutes}分${seconds}秒`
+            });
+            
+            localStorage.setItem('wordKarutaData', JSON.stringify(gameData));
+            
+            // 画面切り替え
+            gameScreen.style.display = 'none';
+            resultScreen.style.display = 'block';
+        }
+        
+        // 再プレイボタン
+        restartBtn.addEventListener('click', () => {
+            resultScreen.style.display = 'none';
+            gameScreen.style.display = 'block';
+            startGame();
+        });
+        
+        // データ閲覧ボタン
+        dataBtn.addEventListener('click', () => {
+            dataTableBody.innerHTML = '';
+            
+            gameData.forEach(data => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${data.name}</td>
+                    <td>${data.correct}</td>
+                    <td>${data.time}</td>
+                `;
+                dataTableBody.appendChild(row);
+            });
+            
+            dataScreen.style.display = 'block';
+        });
+        
+        // データ画面の戻るボタン
+        dataBackBtn.addEventListener('click', () => {
+            dataScreen.style.display = 'none';
+        });
+    </script>
 </body>
 </html>
