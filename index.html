@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>単語かるた - 日本語学習ゲーム</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
             box-sizing: border-box;
@@ -13,17 +14,20 @@
         
         body {
             font-family: 'YuMincho', 'Yu Mincho', 'Hiragino Mincho ProN', 'MS PMincho', serif;
-            background-color: #fdf6e3;
-            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><path fill="none" stroke="%23d4c69e" stroke-width="0.5" d="M20,20 Q50,30 80,20 T140,20 Q170,30 180,20 M20,60 Q30,50 40,60 T60,60 Q70,50 80,60 T100,60 Q110,50 120,60 T140,60 Q150,50 160,60 T180,60 M20,100 Q50,110 80,100 T140,100 Q170,110 180,100 M20,140 Q30,130 40,140 T60,140 Q70,130 80,140 T100,140 Q110,130 120,140 T140,140 Q150,130 160,140 T180,140 M20,180 Q50,190 80,180 T140,180 Q170,190 180,180" /></svg>');
-            background-size: 200px;
+            background: linear-gradient(135deg, #fdf6e3 0%, #f8f0d7 100%);
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><path fill="none" stroke="%23d4c69e" stroke-width="0.5" stroke-opacity="0.3" d="M20,20 Q50,30 80,20 T140,20 Q170,30 180,20 M20,60 Q30,50 40,60 T60,60 Q70,50 80,60 T100,60 Q110,50 120,60 T140,60 Q150,50 160,60 T180,60 M20,100 Q50,110 80,100 T140,100 Q170,110 180,100 M20,140 Q30,130 40,140 T60,140 Q70,130 80,140 T100,140 Q110,130 120,140 T140,140 Q150,130 160,140 T180,140 M20,180 Q50,190 80,180 T140,180 Q170,190 180,180" /></svg>');
+            background-size: 250px;
             min-height: 100vh;
             padding: 15px;
             color: #333;
+            position: relative;
         }
         
         .container {
             max-width: 500px;
             margin: 0 auto;
+            position: relative;
+            z-index: 2;
         }
         
         /* タイトルスタイル */
@@ -34,272 +38,488 @@
             margin: 20px 0 30px;
             font-family: 'YuKyokasho', 'Yu Kyokasho', 'FOT-スーラ Pro B', sans-serif;
             color: #000;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        }
+        
+        .title span {
+            margin: 0 15px;
         }
         
         /* 名前入力画面 */
         .input-section {
             text-align: center;
-            padding: 20px;
-            background-color: rgba(255, 255, 255, 0.85);
-            border-radius: 15px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            padding: 25px 20px;
+            background-color: rgba(255, 255, 255, 0.92);
+            border-radius: 18px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
             margin-top: 20px;
+            border: 1px solid #e6d6a5;
         }
         
         .input-prompt {
             font-family: 'Microsoft YaHei', '微软雅黑', sans-serif;
-            font-size: 1.2rem;
-            margin-bottom: 15px;
+            font-size: 1.25rem;
+            margin-bottom: 20px;
             color: #000;
+            font-weight: bold;
         }
         
         .name-input {
-            width: 80%;
-            padding: 12px 15px;
-            font-size: 1.1rem;
-            border: 2px solid #ccc;
-            border-radius: 8px;
-            margin-bottom: 20px;
+            width: 85%;
+            padding: 14px 18px;
+            font-size: 1.15rem;
+            border: 2px solid #d4c69e;
+            border-radius: 10px;
+            margin-bottom: 25px;
             font-family: 'Microsoft YaHei', '微软雅黑', sans-serif;
+            background: #fffdf5;
+            transition: border-color 0.3s;
+        }
+        
+        .name-input:focus {
+            outline: none;
+            border-color: #b89f5d;
+            box-shadow: 0 0 0 3px rgba(184, 159, 93, 0.2);
         }
         
         .confirm-btn {
-            background-color: #e74c3c;
+            background: linear-gradient(to bottom, #e74c3c, #c0392b);
             color: white;
             border: none;
-            padding: 12px 25px;
-            font-size: 1.1rem;
-            border-radius: 8px;
+            padding: 14px 30px;
+            font-size: 1.15rem;
+            border-radius: 10px;
             cursor: pointer;
             font-family: 'Microsoft YaHei', '微软雅黑', sans-serif;
-            transition: background-color 0.3s;
+            transition: all 0.3s;
+            box-shadow: 0 4px 10px rgba(231, 76, 60, 0.3);
         }
         
         .confirm-btn:hover {
-            background-color: #c0392b;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(231, 76, 60, 0.4);
         }
         
         /* ゲーム画面 */
         .game-section, .result-section, .data-section {
             display: none;
-            background-color: rgba(255, 255, 255, 0.85);
-            border-radius: 15px;
-            padding: 20px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            background-color: rgba(255, 255, 255, 0.92);
+            border-radius: 18px;
+            padding: 25px 20px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
             margin-top: 20px;
+            border: 1px solid #e6d6a5;
         }
         
         /* 問題カード */
         .question-card {
-            background-color: white;
-            border: 2px solid #8B4513;
-            border-radius: 12px;
-            padding: 25px 15px;
-            margin: 0 auto 30px;
+            background: linear-gradient(to bottom, #ffffff, #f9f5e9);
+            border: 3px solid #8B4513;
+            border-radius: 15px;
+            padding: 30px 20px;
+            margin: 0 auto 35px;
             text-align: center;
-            font-size: 1.8rem;
+            font-size: 1.9rem;
             font-weight: bold;
-            max-width: 300px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            max-width: 320px;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.12);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .question-card:before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 8px;
+            background: linear-gradient(to right, #8B4513, #d4a76a);
         }
         
         /* 選択肢カード */
         .options-container {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-            margin-bottom: 25px;
+            gap: 18px;
+            margin-bottom: 30px;
         }
         
         .option-card {
-            background-color: white;
-            border: 2px solid #2E8B57;
-            border-radius: 10px;
-            padding: 18px 10px;
+            background: linear-gradient(to bottom, #ffffff, #f5f9f1);
+            border: 3px solid #2E8B57;
+            border-radius: 12px;
+            padding: 22px 12px;
             text-align: center;
             font-family: 'Microsoft YaHei', '微软雅黑', sans-serif;
-            font-size: 1.1rem;
+            font-size: 1.15rem;
             cursor: pointer;
-            transition: all 0.2s;
-            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s;
+            box-shadow: 0 5px 12px rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .option-card:before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: linear-gradient(to right, #2E8B57, #5cb85c);
         }
         
         .option-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.15);
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
         }
         
         /* 正解・不正解表示 */
         .feedback {
             text-align: center;
             font-family: 'Microsoft YaHei', '微软雅黑', sans-serif;
-            font-size: 1.4rem;
+            font-size: 1.5rem;
             font-weight: bold;
             color: #e74c3c;
-            margin: 15px 0;
-            min-height: 30px;
+            margin: 20px 0;
+            min-height: 36px;
+            text-shadow: 1px 1px 1px rgba(0,0,0,0.1);
         }
         
         /* 次の問題ボタン */
         .next-btn {
-            background-color: #3498db;
+            background: linear-gradient(to bottom, #3498db, #2980b9);
             color: white;
             border: none;
-            padding: 12px 25px;
-            font-size: 1.1rem;
-            border-radius: 8px;
+            padding: 14px 30px;
+            font-size: 1.15rem;
+            border-radius: 10px;
             cursor: pointer;
             font-family: 'Microsoft YaHei', '微软雅黑', sans-serif;
             display: block;
-            margin: 20px auto;
-            transition: background-color 0.3s;
+            margin: 25px auto;
+            transition: all 0.3s;
+            box-shadow: 0 4px 10px rgba(52, 152, 219, 0.3);
         }
         
         .next-btn:hover {
-            background-color: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(52, 152, 219, 0.4);
         }
         
         /* 結果画面 */
         .result-summary {
             text-align: center;
-            margin: 20px 0;
-            font-size: 1.5rem;
+            margin: 25px 0;
+            font-size: 1.6rem;
             font-weight: bold;
         }
         
         .result-comment {
             text-align: center;
-            font-size: 1.3rem;
-            margin: 20px 0;
+            font-size: 1.4rem;
+            margin: 25px 0;
             font-weight: bold;
             color: #8B4513;
+            padding: 15px;
+            background: rgba(212, 198, 174, 0.2);
+            border-radius: 12px;
         }
         
         .mistakes-table {
             width: 100%;
             border-collapse: collapse;
-            margin: 25px 0;
-            font-size: 1rem;
+            margin: 30px 0;
+            font-size: 1.05rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            border-radius: 12px;
+            overflow: hidden;
         }
         
         .mistakes-table th {
-            background-color: #2E8B57;
+            background: linear-gradient(to bottom, #2E8B57, #1f6b47);
             color: white;
-            padding: 12px;
+            padding: 14px;
             text-align: center;
+            font-weight: bold;
         }
         
         .mistakes-table td {
-            padding: 10px;
+            padding: 12px;
             text-align: center;
-            border-bottom: 1px solid #ddd;
+            border-bottom: 1px solid #eae0c2;
         }
         
         .mistakes-table tr:nth-child(even) {
-            background-color: #f9f9f9;
+            background-color: #fcf9f0;
+        }
+        
+        .mistakes-table tr:last-child td {
+            border-bottom: none;
         }
         
         /* データ閲覧ボタン */
         .data-btn {
             position: fixed;
-            bottom: 15px;
-            left: 15px;
-            background-color: #2E8B57;
+            bottom: 20px;
+            left: 20px;
+            background: linear-gradient(to bottom, #2E8B57, #1f6b47);
             color: white;
             border: none;
-            padding: 8px 15px;
-            font-size: 0.9rem;
-            border-radius: 6px;
+            padding: 10px 18px;
+            font-size: 0.95rem;
+            border-radius: 8px;
             cursor: pointer;
             font-family: 'Microsoft YaHei', '微软雅黑', sans-serif;
             z-index: 10;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .data-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.25);
         }
         
         /* データ画面 */
         .data-table {
             width: 100%;
             border-collapse: collapse;
-            margin: 20px 0;
+            margin: 25px 0;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            border-radius: 12px;
+            overflow: hidden;
         }
         
         .data-table th, .data-table td {
-            padding: 12px;
+            padding: 14px;
             text-align: center;
-            border: 1px solid #ddd;
+            border: 1px solid #eae0c2;
         }
         
         .data-table th {
-            background-color: #3498db;
+            background: linear-gradient(to bottom, #3498db, #1a6ea5);
             color: white;
+            font-weight: bold;
+        }
+        
+        .data-table tr:nth-child(even) {
+            background-color: #f5f9ff;
         }
         
         .back-btn {
-            background-color: #7f8c8d;
+            background: linear-gradient(to bottom, #7f8c8d, #6c7a7b);
             color: white;
             border: none;
-            padding: 10px 20px;
-            font-size: 1rem;
-            border-radius: 6px;
+            padding: 12px 25px;
+            font-size: 1.05rem;
+            border-radius: 8px;
             cursor: pointer;
             font-family: 'Microsoft YaHei', '微软雅黑', sans-serif;
             display: block;
-            margin: 20px auto 0;
+            margin: 25px auto 0;
+            transition: all 0.3s;
+            box-shadow: 0 4px 10px rgba(127, 140, 141, 0.3);
+        }
+        
+        .back-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(127, 140, 141, 0.4);
         }
         
         /* 状態別スタイル */
         .correct {
             border-color: #e74c3c !important;
             color: #e74c3c !important;
-            background-color: #ffebee;
+            background: linear-gradient(to bottom, #ffebee, #ffcdd2) !important;
+            transform: scale(1.03);
         }
         
         .incorrect {
             border-color: #3498db !important;
             color: #3498db !important;
-            background-color: #ebf5fb;
+            background: linear-gradient(to bottom, #ebf5fb, #d6eaf8) !important;
         }
         
         /* プログレスバー */
         .progress-container {
             width: 100%;
-            height: 8px;
-            background-color: #e0e0e0;
-            border-radius: 4px;
-            margin: 15px 0;
+            height: 10px;
+            background-color: #e0d8c0;
+            border-radius: 5px;
+            margin: 20px 0;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
         }
         
         .progress-bar {
             height: 100%;
-            background-color: #2E8B57;
-            border-radius: 4px;
+            background: linear-gradient(to right, #2E8B57, #5cb85c);
+            border-radius: 5px;
             transition: width 0.4s ease;
+            box-shadow: 0 2px 4px rgba(46, 139, 87, 0.4);
+        }
+        
+        /* データ集約機能 */
+        .data-aggregation {
+            margin-top: 25px;
+            padding: 20px;
+            background: rgba(245, 249, 255, 0.7);
+            border-radius: 12px;
+            border: 1px solid #d1e0f0;
+        }
+        
+        .aggregation-title {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 1.4rem;
+            color: #2c3e50;
+            font-weight: bold;
+        }
+        
+        .aggregation-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .data-input {
+            padding: 12px 15px;
+            border: 2px solid #d4c69e;
+            border-radius: 8px;
+            font-family: 'Microsoft YaHei', '微软雅黑', sans-serif;
+            font-size: 1rem;
+            background: #fffdf5;
+        }
+        
+        .aggregation-btn {
+            background: linear-gradient(to bottom, #9b59b6, #8e44ad);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            font-size: 1.05rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: 'Microsoft YaHei', '微软雅黑', sans-serif;
+            transition: all 0.3s;
+        }
+        
+        .aggregation-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(155, 89, 182, 0.3);
+        }
+        
+        .aggregated-data {
+            margin-top: 25px;
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #eae0c2;
+            border-radius: 10px;
+            padding: 15px;
+            background: white;
+        }
+        
+        .device-data {
+            padding: 12px;
+            border-bottom: 1px solid #f0e9d7;
+            margin-bottom: 10px;
+        }
+        
+        .device-data:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+        
+        .device-name {
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #2c3e50;
+        }
+        
+        .device-stats {
+            display: flex;
+            justify-content: space-between;
+            color: #7f8c8d;
         }
         
         /* レスポンシブ調整 */
         @media (max-width: 480px) {
             .title {
-                font-size: 1.8rem;
+                font-size: 1.9rem;
             }
             
             .question-card {
-                font-size: 1.5rem;
-                padding: 20px 10px;
+                font-size: 1.6rem;
+                padding: 25px 15px;
             }
             
             .option-card {
-                padding: 15px 8px;
-                font-size: 1rem;
+                padding: 18px 10px;
+                font-size: 1.05rem;
             }
             
             .options-container {
-                gap: 10px;
+                gap: 12px;
             }
+            
+            .result-summary {
+                font-size: 1.4rem;
+            }
+            
+            .result-comment {
+                font-size: 1.3rem;
+            }
+        }
+        
+        /* デコレーション要素 */
+        .decoration {
+            position: absolute;
+            z-index: 1;
+            opacity: 0.1;
+        }
+        
+        .decoration-1 {
+            top: 10%;
+            left: 5%;
+            font-size: 8rem;
+            transform: rotate(-15deg);
+        }
+        
+        .decoration-2 {
+            top: 15%;
+            right: 5%;
+            font-size: 6rem;
+            transform: rotate(10deg);
+        }
+        
+        .decoration-3 {
+            bottom: 15%;
+            left: 10%;
+            font-size: 5rem;
+            transform: rotate(5deg);
+        }
+        
+        .decoration-4 {
+            bottom: 20%;
+            right: 8%;
+            font-size: 7rem;
+            transform: rotate(-8deg);
         }
     </style>
 </head>
 <body>
+    <!-- 背景デコレーション -->
+    <div class="decoration decoration-1">🍣</div>
+    <div class="decoration decoration-2">🏯</div>
+    <div class="decoration decoration-3">🎎</div>
+    <div class="decoration decoration-4">🎏</div>
+    
     <div class="container">
-        <h1 class="title">🍣 単語かるた 🏯</h1>
+        <h1 class="title"><span>🍣</span> 単語かるた <span>🏯</span></h1>
         
         <!-- 名前入力画面 -->
         <div id="input-screen" class="input-section">
@@ -344,21 +564,37 @@
         
         <!-- データ閲覧画面 -->
         <div id="data-screen" class="data-section">
-            <h2 style="text-align: center; margin-bottom: 20px;">プレイデータ</h2>
+            <h2 style="text-align: center; margin-bottom: 25px; color: #2c3e50;">プレイデータ一覧</h2>
             <table class="data-table">
                 <thead>
                     <tr>
                         <th>名前</th>
                         <th>正解数</th>
                         <th>時間</th>
+                        <th>日付</th>
                     </tr>
                 </thead>
                 <tbody id="data-table-body"></tbody>
             </table>
+            
+            <!-- データ集約セクション -->
+            <div class="data-aggregation">
+                <div class="aggregation-title">複数端末データ集約</div>
+                <div class="aggregation-controls">
+                    <textarea id="import-data" class="data-input" rows="4" placeholder="他の端末からエクスポートしたデータを貼り付けてください"></textarea>
+                    <button id="import-btn" class="aggregation-btn">データをインポート</button>
+                    <button id="export-btn" class="aggregation-btn">この端末のデータをエクスポート</button>
+                </div>
+                
+                <div class="aggregated-data" id="aggregated-data">
+                    <!-- 集約データがここに表示されます -->
+                </div>
+            </div>
+            
             <button id="data-back-btn" class="back-btn">戻る</button>
         </div>
         
-        <button id="data-btn" class="data-btn">データを見る</button>
+        <button id="data-btn" class="data-btn"><i class="fas fa-database"></i> データを見る</button>
     </div>
 
     <script>
@@ -394,6 +630,7 @@
         let endTime = 0;
         let mistakes = [];
         let gameData = JSON.parse(localStorage.getItem('wordKarutaData')) || [];
+        let aggregatedData = JSON.parse(localStorage.getItem('aggregatedWordKarutaData')) || [];
         
         // DOM要素
         const inputScreen = document.getElementById('input-screen');
@@ -414,6 +651,10 @@
         const dataTableBody = document.getElementById('data-table-body');
         const dataBackBtn = document.getElementById('data-back-btn');
         const progressBar = document.getElementById('progress-bar');
+        const importData = document.getElementById('import-data');
+        const importBtn = document.getElementById('import-btn');
+        const exportBtn = document.getElementById('export-btn');
+        const aggregatedDataContainer = document.getElementById('aggregated-data');
         
         // 名前確認ボタン
         confirmBtn.addEventListener('click', () => {
@@ -532,6 +773,7 @@
             const timeTaken = Math.floor((endTime - startTime) / 1000);
             const minutes = Math.floor(timeTaken / 60);
             const seconds = timeTaken % 60;
+            const dateStr = new Date().toLocaleDateString();
             
             // 結果を表示
             resultSummary.textContent = `正解：${correctAnswers}問　時間：${minutes}分${seconds}秒`;
@@ -563,7 +805,8 @@
             gameData.push({
                 name: playerName,
                 correct: correctAnswers,
-                time: `${minutes}分${seconds}秒`
+                time: `${minutes}分${seconds}秒`,
+                date: dateStr
             });
             
             localStorage.setItem('wordKarutaData', JSON.stringify(gameData));
@@ -590,9 +833,13 @@
                     <td>${data.name}</td>
                     <td>${data.correct}</td>
                     <td>${data.time}</td>
+                    <td>${data.date}</td>
                 `;
                 dataTableBody.appendChild(row);
             });
+            
+            // 集約データを表示
+            renderAggregatedData();
             
             dataScreen.style.display = 'block';
         });
@@ -600,6 +847,97 @@
         // データ画面の戻るボタン
         dataBackBtn.addEventListener('click', () => {
             dataScreen.style.display = 'none';
+        });
+        
+        // データをエクスポート
+        exportBtn.addEventListener('click', () => {
+            const dataToExport = JSON.stringify(gameData);
+            importData.value = dataToExport;
+            alert('この端末のデータがエクスポートされました。他の端末にコピーしてインポートしてください。');
+        });
+        
+        // データをインポート
+        importBtn.addEventListener('click', () => {
+            try {
+                const importedData = JSON.parse(importData.value);
+                
+                if (!Array.isArray(importedData)) {
+                    throw new Error('無効なデータ形式です');
+                }
+                
+                // 現在の集約データに追加
+                aggregatedData = [...aggregatedData, ...importedData];
+                
+                // 重複を削除（シンプルな重複チェック）
+                const uniqueData = [];
+                const seen = new Set();
+                
+                aggregatedData.forEach(item => {
+                    const key = `${item.name}-${item.correct}-${item.time}-${item.date}`;
+                    if (!seen.has(key)) {
+                        seen.add(key);
+                        uniqueData.push(item);
+                    }
+                });
+                
+                aggregatedData = uniqueData;
+                
+                // 保存
+                localStorage.setItem('aggregatedWordKarutaData', JSON.stringify(aggregatedData));
+                
+                // 表示を更新
+                renderAggregatedData();
+                
+                alert('データのインポートが完了しました！');
+            } catch (e) {
+                alert('データのインポートに失敗しました。正しい形式のデータを貼り付けてください。');
+                console.error(e);
+            }
+        });
+        
+        // 集約データを表示
+        function renderAggregatedData() {
+            aggregatedDataContainer.innerHTML = '';
+            
+            if (aggregatedData.length === 0) {
+                aggregatedDataContainer.innerHTML = '<p style="text-align: center; color: #7f8c8d;">集約されたデータがありません</p>';
+                return;
+            }
+            
+            // 端末ごとにデータをグループ化
+            const groupedByDevice = aggregatedData.reduce((acc, item) => {
+                if (!acc[item.name]) {
+                    acc[item.name] = [];
+                }
+                acc[item.name].push(item);
+                return acc;
+            }, {});
+            
+            // 各端末のデータを表示
+            Object.keys(groupedByDevice).forEach(name => {
+                const deviceData = groupedByDevice[name];
+                const totalGames = deviceData.length;
+                const totalCorrect = deviceData.reduce((sum, game) => sum + game.correct, 0);
+                const avgCorrect = (totalCorrect / totalGames).toFixed(1);
+                
+                const deviceEl = document.createElement('div');
+                deviceEl.className = 'device-data';
+                deviceEl.innerHTML = `
+                    <div class="device-name">${name} (${totalGames}回プレイ)</div>
+                    <div class="device-stats">
+                        <span>合計正解数: ${totalCorrect}</span>
+                        <span>平均正解数: ${avgCorrect}</span>
+                    </div>
+                `;
+                
+                aggregatedDataContainer.appendChild(deviceEl);
+            });
+        }
+        
+        // 初期化時に集約データを読み込む
+        window.addEventListener('DOMContentLoaded', () => {
+            // 集約データの初期表示
+            renderAggregatedData();
         });
     </script>
 </body>
