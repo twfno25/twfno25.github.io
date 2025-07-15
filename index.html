@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>第14回（第1组）</title>
+  <style>
+    body {
+      background-color: #fdfcf5;
+      font-family: "Microsoft YaHei", "Arial", sans-serif;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+    }
+    h1 {
+      font-size: 3em;
+      margin: 20px 0;
+    }
+    #start-btn {
+      font-family: "Microsoft YaHei";
+      background-color: red;
+      color: white;
+      padding: 10px 20px;
+      font-size: 16px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      margin-bottom: 10px;
+    }
+    #game {
+      display: none;
+      justify-content: center;
+      gap: 20px;
+      max-width: 1100px;
+      margin: 0 auto;
+      flex-wrap: nowrap;
+      min-height: 500px;
+      position: relative;
+    }
+    .column {
+      display: flex;
+      flex-wrap: wrap;
+      width: 50%;
+      justify-content: center;
+    }
+    .bubble {
+      width: 100px;
+      height: 100px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 10px;
+      border-radius: 50%;
+      color: white;
+      font-weight: bold;
+      font-size: 16px;
+      text-align: center;
+      padding: 10px;
+      box-sizing: border-box;
+      cursor: pointer;
+      box-shadow: inset -4px -4px 10px rgba(0,0,0,0.2), inset 4px 4px 10px rgba(255,255,255,0.6);
+      user-select: none;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .bubble:hover {
+      transform: scale(1.05);
+    }
+    .selected {
+      box-shadow: 0 0 10px 4px gold;
+    }
+    .chinese {
+      background-color: #b3cde0;
+    }
+    .japanese {
+      background-color: #e5b3b3;
+    }
+    #timer {
+      font-size: 1.5em;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>第14回（第1组）</h1>
+  <button id="start-btn">游戏开始</button>
+  <div id="timer">用时：0 秒</div>
+  <div id="game">
+    <div id="left" class="column"></div>
+    <div id="right" class="column"></div>
+    <div id="result-area" style="display:none; position:absolute; top:50%; left:50%; transform:translate(-50%, -50%);
+      background:rgba(255,255,255,0.95); padding:20px; border-radius:10px; box-shadow:0 0 10px rgba(0,0,0,0.3);">
+      <h2 id="message" style="margin-top:0;"></h2>
+      <div id="result-container"></div>
+    </div>
+  </div>
+
+  <audio id="click" src="sound1_click.mp3"></audio>
+  <audio id="correct" src="sound2_correct.mp3"></audio>
+  <audio id="incorrect" src="sound3_incorrect.mp3"></audio>
+
+  <script>
+
+    const vocab = [["コピー", "复印"],
+      ["でんげん", "电源"],
+      ["げんこう", "原稿"],
+      ["おく", "放"],
+      ["スタート", "开始、出发"],
+      ["はじまる", "开始"],
+      ["かみ", "纸"],
+      ["かたづける", "收拾"],
+      ["はたらく", "工作"],
+      ["シャワーをあびる", "洗澡"]];
+    const containerLeft = document.getElementById("left");
+    const containerRight = document.getElementById("right");
+    const timerDisplay = document.getElementById("timer");
+    const startBtn = document.getElementById("start-btn");
+    const gameContainer = document.getElementById("game");
+    const resultArea = document.getElementById("result-area");
+    const message = document.getElementById("message");
+    const resultContainer = document.getElementById("result-container");
+
+    const clickSound = document.getElementById("click");
+    const correctSound = document.getElementById("correct");
+    const incorrectSound = document.getElementById("incorrect");
+
+    let startTime = null;
+    let timerInterval = null;
+    let selected = [];
+    let matches = 0;
+    let totalAttempts = 0;
+    let incorrectPairs = [];
+
+    function shuffle(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    }
+
+    function updateTimer() {
+      const now = Date.now();
+      timerDisplay.textContent = "用时：" + Math.floor((now - startTime) / 1000) + " 秒";
+    }
+
+    function startGame() {
+      startBtn.style.display = 'none';
+      gameContainer.style.display = 'flex';
+      startTime = Date.now();
+      timerInterval = setInterval(updateTimer, 1000);
+      createGame();
+    }
+
+    function createGame() {
+      const chinese = shuffle(vocab.map(v => { return { text: v[1], lang: 'cn', pair: v[0] }; }));
+      const japanese = shuffle(vocab.map(v => { return { text: v[0], lang: 'jp', pair: v[1] }; }));
+
+      japanese.forEach(item => {
+        const div = document.createElement("div");
+        div.className = "bubble japanese";
+        div.textContent = item.text;
+        div.dataset.pair = item.pair;
+        div.dataset.lang = 'jp';
+        div.onclick = () => handleClick(div);
+        containerLeft.appendChild(div);
+      });
+      chinese.forEach(item => {
+        const div = document.createElement("div");
+        div.className = "bubble chinese";
+        div.textContent = item.text;
+        div.dataset.pair = item.pair;
+        div.dataset.lang = 'cn';
+        div.onclick = () => handleClick(div);
+        containerRight.appendChild(div);
+      });
+    }
+
+    function handleClick(div) {
+      if (!startTime || selected.includes(div) || div.style.visibility === 'hidden') return;
+      clickSound.currentTime = 0;
+      clickSound.play();
+
+      if (selected.length === 1 && selected[0].dataset.lang === div.dataset.lang) {
+        selected[0].classList.remove('selected');
+        selected = [div];
+        div.classList.add('selected');
+        return;
+      }
+
+      if (selected.length < 2) {
+        div.classList.add('selected');
+        selected.push(div);
+      }
+
+      if (selected.length === 2) {
+        const [a, b] = selected;
+        totalAttempts++;
+        if (a.dataset.pair === b.textContent && b.dataset.pair === a.textContent) {
+          setTimeout(() => {
+            correctSound.play();
+            a.style.visibility = 'hidden';
+            b.style.visibility = 'hidden';
+            selected = [];
+            matches++;
+            if (matches === vocab.length) {
+              clearInterval(timerInterval);
+              const timeUsed = Math.floor((Date.now() - startTime) / 1000);
+              const accuracy = Math.round((matches / totalAttempts) * 100);
+              message.textContent = `恭喜你挑战成功！\n正确率：${accuracy}%\n用时：${timeUsed} 秒`;
+
+              if (incorrectPairs.length > 0) {
+                const table = document.createElement('table');
+                table.style.borderCollapse = 'collapse';
+                table.style.margin = '20px auto 0';
+                table.style.fontSize = '18px';
+                table.innerHTML = '<tr><th style="background:#f8cccc;">日语</th><th style="color:red; background:#dceeff;">×</th><th style="color:green; background:#dceeff;">✓</th></tr>';
+                incorrectPairs.forEach(p => {
+                  const row = document.createElement('tr');
+                  row.innerHTML = `<td style="border:1px solid #ccc; padding:8px 12px;">${p.jp}</td>
+                                   <td style="border:1px solid #ccc; padding:8px 12px;">${p.user}</td>
+                                   <td style="border:1px solid #ccc; padding:8px 12px;">${p.correct}</td>`;
+                  table.appendChild(row);
+                });
+                resultContainer.innerHTML = '';
+                resultContainer.appendChild(table);
+              }
+
+              resultArea.style.display = 'block';
+            }
+          }, 300);
+        } else {
+          incorrectPairs.push({
+            jp: a.dataset.lang === 'jp' ? a.textContent : b.textContent,
+            user: a.dataset.lang === 'cn' ? a.textContent : b.textContent,
+            correct: a.dataset.lang === 'jp' ? a.dataset.pair : b.dataset.pair
+          });
+          setTimeout(() => {
+            incorrectSound.play();
+            a.classList.remove('selected');
+            b.classList.remove('selected');
+            selected = [];
+          }, 600);
+        }
+      }
+    }
+
+    startBtn.addEventListener("click", startGame);
+
+  </script>
+</body>
+</html>
