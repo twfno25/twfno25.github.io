@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>単語かるた - 日本語学習ゲーム</title>
+    <title>単語かるた - クラウド版日本語学習ゲーム</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
@@ -607,9 +607,40 @@
             transform: translateY(-2px);
             box-shadow: 0 6px 12px rgba(155, 89, 182, 0.4);
         }
+        
+        /* クラウド接続ステータス */
+        .cloud-status {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .cloud-connected {
+            background: rgba(46, 204, 113, 0.2);
+            color: #27ae60;
+            border: 1px solid #27ae60;
+        }
+        
+        .cloud-disconnected {
+            background: rgba(231, 76, 60, 0.2);
+            color: #c0392b;
+            border: 1px solid #c0392b;
+        }
     </style>
 </head>
 <body>
+    <!-- クラウド接続ステータス -->
+    <div id="cloud-status" class="cloud-status cloud-connected">
+        <i class="fas fa-cloud"></i> クラウドに接続中
+    </div>
+    
     <!-- 背景デコレーション -->
     <div class="decoration decoration-1">🍣</div>
     <div class="decoration decoration-2">🏯</div>
@@ -660,24 +691,6 @@
             <button id="restart-btn" class="next-btn">もう一度プレイ</button>
         </div>
         
-        <!-- データ閲覧画面 -->
-        <div id="data-screen" class="data-section">
-            <h2 style="text-align: center; margin-bottom: 25px; color: #2c3e50;">プレイデータ一覧</h2>
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>名前</th>
-                        <th>正解数</th>
-                        <th>時間</th>
-                        <th>日付</th>
-                    </tr>
-                </thead>
-                <tbody id="data-table-body"></tbody>
-            </table>
-            
-            <button id="data-back-btn" class="back-btn">戻る</button>
-        </div>
-        
         <!-- 教師ログイン画面 -->
         <div id="teacher-login" class="teacher-section">
             <div class="teacher-login">
@@ -725,7 +738,7 @@
                             <th>正解数</th>
                             <th>所要時間</th>
                             <th>日付</th>
-                            <th>詳細</th>
+                            <th>ステータス</th>
                         </tr>
                     </thead>
                     <tbody id="teacher-data-body">
@@ -741,7 +754,26 @@
         <button id="teacher-btn" class="teacher-btn"><i class="fas fa-chalkboard-teacher"></i> 教師用</button>
     </div>
 
+    <!-- Firebase SDKの読み込み -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    
     <script>
+        // Firebase設定
+        const firebaseConfig = {
+            apiKey: "AIzaSyDqKjTvO8o1vWvF4rS4tYb5JZ4lX7d8e9f",
+            authDomain: "japanese-learning-game.firebaseapp.com",
+            databaseURL: "https://japanese-learning-game-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "japanese-learning-game",
+            storageBucket: "japanese-learning-game.appspot.com",
+            messagingSenderId: "123456789012",
+            appId: "1:123456789012:web:abcdefghijklmnopqrstuv"
+        };
+        
+        // Firebaseの初期化
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+        
         // 問題データ
         const wordData = [
             { japanese: "きょうと", chinese: "京都", options: ["京都", "東京", "首都", "都市"] },
@@ -773,7 +805,8 @@
         let startTime = 0;
         let endTime = 0;
         let mistakes = [];
-        let gameData = JSON.parse(localStorage.getItem('wordKarutaData')) || [];
+        let gameData = [];
+        let userId = "";
         
         // 教師用パスワード
         const TEACHER_PASSWORD = "sensei123";
@@ -782,7 +815,6 @@
         const inputScreen = document.getElementById('input-screen');
         const gameScreen = document.getElementById('game-screen');
         const resultScreen = document.getElementById('result-screen');
-        const dataScreen = document.getElementById('data-screen');
         const teacherLogin = document.getElementById('teacher-login');
         const teacherDashboard = document.getElementById('teacher-dashboard');
         const playerNameInput = document.getElementById('player-name');
@@ -797,7 +829,6 @@
         const restartBtn = document.getElementById('restart-btn');
         const dataBtn = document.getElementById('data-btn');
         const teacherBtn = document.getElementById('teacher-btn');
-        const dataTableBody = document.getElementById('data-table-body');
         const dataBackBtn = document.getElementById('data-back-btn');
         const progressBar = document.getElementById('progress-bar');
         const teacherPassword = document.getElementById('teacher-password');
@@ -809,6 +840,17 @@
         const passRate = document.getElementById('pass-rate');
         const totalTests = document.getElementById('total-tests');
         const difficultWordsList = document.getElementById('difficult-words-list');
+        const cloudStatus = document.getElementById('cloud-status');
+        
+        // Firebaseリアルタイムリスナーの設定
+        function setupFirebaseListeners() {
+            // 学生データの変更を監視
+            database.ref('results').on('value', (snapshot) => {
+                if (teacherDashboard.style.display === 'block') {
+                    updateTeacherDashboard();
+                }
+            });
+        }
         
         // 名前確認ボタン
         confirmBtn.addEventListener('click', () => {
@@ -818,10 +860,16 @@
             }
             
             playerName = playerNameInput.value.trim();
+            userId = generateUserId();
             inputScreen.style.display = 'none';
             gameScreen.style.display = 'block';
             startGame();
         });
+        
+        // ユーザーIDを生成
+        function generateUserId() {
+            return 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        }
         
         // ゲーム開始
         function startGame() {
@@ -927,7 +975,7 @@
             const timeTaken = Math.floor((endTime - startTime) / 1000);
             const minutes = Math.floor(timeTaken / 60);
             const seconds = timeTaken % 60;
-            const dateStr = new Date().toLocaleDateString();
+            const dateStr = new Date().toLocaleString();
             
             // 結果を表示
             resultSummary.textContent = `正解：${correctAnswers}問　時間：${minutes}分${seconds}秒`;
@@ -955,20 +1003,34 @@
                 mistakesList.appendChild(row);
             });
             
-            // ゲームデータを保存
-            gameData.push({
-                name: playerName,
-                correct: correctAnswers,
-                time: `${minutes}分${seconds}秒`,
-                date: dateStr,
-                mistakes: [...mistakes] // 間違いデータも保存
-            });
-            
-            localStorage.setItem('wordKarutaData', JSON.stringify(gameData));
+            // 結果をFirebaseに保存
+            saveResultToCloud(playerName, correctAnswers, minutes, seconds, mistakes, dateStr);
             
             // 画面切り替え
             gameScreen.style.display = 'none';
             resultScreen.style.display = 'block';
+        }
+        
+        // 結果をクラウドに保存
+        function saveResultToCloud(name, correct, minutes, seconds, mistakes, date) {
+            const resultData = {
+                name: name,
+                correct: correct,
+                time: `${minutes}分${seconds}秒`,
+                date: date,
+                mistakes: mistakes,
+                userId: userId,
+                status: "完了"
+            };
+            
+            // Firebaseに保存
+            database.ref('results/' + userId).set(resultData)
+                .then(() => {
+                    console.log("結果をクラウドに保存しました");
+                })
+                .catch((error) => {
+                    console.error("保存エラー:", error);
+                });
         }
         
         // 再プレイボタン
@@ -976,29 +1038,6 @@
             resultScreen.style.display = 'none';
             gameScreen.style.display = 'block';
             startGame();
-        });
-        
-        // データ閲覧ボタン
-        dataBtn.addEventListener('click', () => {
-            dataTableBody.innerHTML = '';
-            
-            gameData.forEach(data => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${data.name}</td>
-                    <td>${data.correct}</td>
-                    <td>${data.time}</td>
-                    <td>${data.date}</td>
-                `;
-                dataTableBody.appendChild(row);
-            });
-            
-            dataScreen.style.display = 'block';
-        });
-        
-        // データ画面の戻るボタン
-        dataBackBtn.addEventListener('click', () => {
-            dataScreen.style.display = 'none';
         });
         
         // 教師ボタン
@@ -1025,82 +1064,94 @@
         
         // 教師ダッシュボードを更新
         function updateTeacherDashboard() {
-            // データを再読み込み
-            const allData = JSON.parse(localStorage.getItem('wordKarutaData')) || [];
-            
-            // 統計情報を計算
-            const uniqueStudents = [...new Set(allData.map(item => item.name))];
-            const totalTestsCount = allData.length;
-            const totalCorrectSum = allData.reduce((sum, item) => sum + item.correct, 0);
-            const avgCorrect = totalTestsCount > 0 ? (totalCorrectSum / totalTestsCount).toFixed(1) : 0;
-            const passedCount = allData.filter(item => item.correct >= 16).length;
-            const passRateValue = totalTestsCount > 0 ? Math.round((passedCount / totalTestsCount) * 100) : 0;
-            
-            // 統計情報を表示
-            totalStudents.textContent = uniqueStudents.length;
-            totalTests.textContent = totalTestsCount;
-            avgScore.textContent = avgCorrect;
-            passRate.textContent = `${passRateValue}%`;
-            
-            // 難しい単語を分析
-            const wordMistakes = {};
-            allData.forEach(test => {
-                test.mistakes.forEach(mistake => {
-                    if (!wordMistakes[mistake.japanese]) {
-                        wordMistakes[mistake.japanese] = 0;
-                    }
-                    wordMistakes[mistake.japanese]++;
+            // Firebaseからデータを取得
+            database.ref('results').once('value')
+                .then((snapshot) => {
+                    const allData = [];
+                    snapshot.forEach((childSnapshot) => {
+                        const data = childSnapshot.val();
+                        allData.push(data);
+                    });
+                    
+                    // 統計情報を計算
+                    const uniqueStudents = [...new Set(allData.map(item => item.name))];
+                    const totalTestsCount = allData.length;
+                    const totalCorrectSum = allData.reduce((sum, item) => sum + item.correct, 0);
+                    const avgCorrect = totalTestsCount > 0 ? (totalCorrectSum / totalTestsCount).toFixed(1) : 0;
+                    const passedCount = allData.filter(item => item.correct >= 16).length;
+                    const passRateValue = totalTestsCount > 0 ? Math.round((passedCount / totalTestsCount) * 100) : 0;
+                    
+                    // 統計情報を表示
+                    totalStudents.textContent = uniqueStudents.length;
+                    totalTests.textContent = totalTestsCount;
+                    avgScore.textContent = avgCorrect;
+                    passRate.textContent = `${passRateValue}%`;
+                    
+                    // 難しい単語を分析
+                    const wordMistakes = {};
+                    allData.forEach(test => {
+                        if (test.mistakes) {
+                            test.mistakes.forEach(mistake => {
+                                if (!wordMistakes[mistake.japanese]) {
+                                    wordMistakes[mistake.japanese] = 0;
+                                }
+                                wordMistakes[mistake.japanese]++;
+                            });
+                        }
+                    });
+                    
+                    // 間違いが多い順にソート
+                    const sortedWords = Object.entries(wordMistakes)
+                        .sort((a, b) => b[1] - a[1])
+                        .slice(0, 5);
+                    
+                    // 難しい単語を表示
+                    difficultWordsList.innerHTML = '';
+                    sortedWords.forEach(([word, count]) => {
+                        const wordTag = document.createElement('div');
+                        wordTag.classList.add('word-tag');
+                        wordTag.textContent = `${word} (${count}回)`;
+                        difficultWordsList.appendChild(wordTag);
+                    });
+                    
+                    // 詳細データを表示
+                    teacherDataBody.innerHTML = '';
+                    allData.forEach(data => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${data.name}</td>
+                            <td>${data.correct} / 20</td>
+                            <td>${data.time}</td>
+                            <td>${data.date}</td>
+                            <td>${data.status || "完了"}</td>
+                        `;
+                        teacherDataBody.appendChild(row);
+                    });
+                })
+                .catch((error) => {
+                    console.error("データ取得エラー:", error);
+                    alert('データの取得に失敗しました');
                 });
-            });
+        }
+        
+        // 初期化
+        function init() {
+            setupFirebaseListeners();
             
-            // 間違いが多い順にソート
-            const sortedWords = Object.entries(wordMistakes)
-                .sort((a, b) => b[1] - a[1])
-                .slice(0, 5);
-            
-            // 難しい単語を表示
-            difficultWordsList.innerHTML = '';
-            sortedWords.forEach(([word, count]) => {
-                const wordTag = document.createElement('div');
-                wordTag.classList.add('word-tag');
-                wordTag.textContent = `${word} (${count}回)`;
-                difficultWordsList.appendChild(wordTag);
-            });
-            
-            // 詳細データを表示
-            teacherDataBody.innerHTML = '';
-            allData.forEach(data => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${data.name}</td>
-                    <td>${data.correct} / 20</td>
-                    <td>${data.time}</td>
-                    <td>${data.date}</td>
-                    <td><button class="view-details-btn" data-name="${data.name}" data-date="${data.date}">詳細</button></td>
-                `;
-                teacherDataBody.appendChild(row);
-            });
-            
-            // 詳細ボタンにイベントリスナーを追加
-            document.querySelectorAll('.view-details-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const name = this.getAttribute('data-name');
-                    const date = this.getAttribute('data-date');
-                    showTestDetails(name, date);
-                });
+            // クラウド接続ステータスの更新
+            database.ref('.info/connected').on('value', (snapshot) => {
+                if (snapshot.val() === true) {
+                    cloudStatus.className = 'cloud-status cloud-connected';
+                    cloudStatus.innerHTML = '<i class="fas fa-cloud"></i> クラウドに接続中';
+                } else {
+                    cloudStatus.className = 'cloud-status cloud-disconnected';
+                    cloudStatus.innerHTML = '<i class="fas fa-cloud"></i> クラウド接続なし';
+                }
             });
         }
         
-        // テスト詳細を表示
-        function showTestDetails(name, date) {
-            const allData = JSON.parse(localStorage.getItem('wordKarutaData')) || [];
-            const test = allData.find(item => item.name === name && item.date === date);
-            
-            if (!test) return;
-            
-            // 詳細データを表示
-            alert(`${name}さんのテスト結果 (${date})\n\n正解数: ${test.correct}/20\n所要時間: ${test.time}\n\n間違えた問題: ${test.mistakes.length}問`);
-        }
+        // ページ読み込み時に初期化
+        window.addEventListener('DOMContentLoaded', init);
     </script>
 </body>
 </html>
