@@ -101,7 +101,7 @@
         }
         
         /* ゲーム画面 */
-        .game-section, .result-section, .data-section {
+        .game-section, .result-section, .data-section, .teacher-section {
             display: none;
             background-color: rgba(255, 255, 255, 0.92);
             border-radius: 18px;
@@ -285,6 +285,32 @@
             box-shadow: 0 6px 12px rgba(0, 0, 0, 0.25);
         }
         
+        /* 教師用ボタン */
+        .teacher-btn {
+            position: fixed;
+            bottom: 70px;
+            left: 20px;
+            background: linear-gradient(to bottom, #9b59b6, #8e44ad);
+            color: white;
+            border: none;
+            padding: 10px 18px;
+            font-size: 0.95rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: 'Microsoft YaHei', '微软雅黑', sans-serif;
+            z-index: 10;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .teacher-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.25);
+        }
+        
         /* データ画面 */
         .data-table {
             width: 100%;
@@ -363,87 +389,104 @@
             box-shadow: 0 2px 4px rgba(46, 139, 87, 0.4);
         }
         
-        /* データ集約機能 */
-        .data-aggregation {
-            margin-top: 25px;
-            padding: 20px;
-            background: rgba(245, 249, 255, 0.7);
+        /* 教師ダッシュボード */
+        .teacher-dashboard {
+            background: rgba(245, 249, 255, 0.9);
             border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
             border: 1px solid #d1e0f0;
         }
         
-        .aggregation-title {
+        .dashboard-title {
             text-align: center;
             margin-bottom: 20px;
-            font-size: 1.4rem;
+            font-size: 1.6rem;
             color: #2c3e50;
             font-weight: bold;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #3498db;
         }
         
-        .aggregation-controls {
+        .stats-container {
             display: flex;
-            flex-direction: column;
-            gap: 15px;
-            margin-bottom: 20px;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            margin-bottom: 25px;
         }
         
-        .data-input {
-            padding: 12px 15px;
-            border: 2px solid #d4c69e;
-            border-radius: 8px;
-            font-family: 'Microsoft YaHei', '微软雅黑', sans-serif;
-            font-size: 1rem;
-            background: #fffdf5;
-        }
-        
-        .aggregation-btn {
-            background: linear-gradient(to bottom, #9b59b6, #8e44ad);
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            font-size: 1.05rem;
-            border-radius: 8px;
-            cursor: pointer;
-            font-family: 'Microsoft YaHei', '微软雅黑', sans-serif;
-            transition: all 0.3s;
-        }
-        
-        .aggregation-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(155, 89, 182, 0.3);
-        }
-        
-        .aggregated-data {
-            margin-top: 25px;
-            max-height: 300px;
-            overflow-y: auto;
-            border: 1px solid #eae0c2;
+        .stat-box {
+            background: white;
             border-radius: 10px;
             padding: 15px;
-            background: white;
+            text-align: center;
+            min-width: 120px;
+            margin: 10px;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
         }
         
-        .device-data {
-            padding: 12px;
-            border-bottom: 1px solid #f0e9d7;
-            margin-bottom: 10px;
-        }
-        
-        .device-data:last-child {
-            border-bottom: none;
-            margin-bottom: 0;
-        }
-        
-        .device-name {
+        .stat-value {
+            font-size: 2rem;
             font-weight: bold;
-            margin-bottom: 8px;
-            color: #2c3e50;
+            color: #2E8B57;
+            margin: 10px 0;
         }
         
-        .device-stats {
-            display: flex;
-            justify-content: space-between;
+        .stat-label {
             color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+        
+        .difficult-words {
+            margin-top: 25px;
+        }
+        
+        .difficult-title {
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+            color: #2c3e50;
+            font-weight: bold;
+        }
+        
+        .word-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .word-tag {
+            background: #e74c3c;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+        
+        /* 教師用テーブル */
+        .teacher-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 0.9rem;
+        }
+        
+        .teacher-table th {
+            background: linear-gradient(to bottom, #9b59b6, #8e44ad);
+            color: white;
+            padding: 12px;
+            text-align: center;
+            position: sticky;
+            top: 0;
+        }
+        
+        .teacher-table td {
+            padding: 10px;
+            text-align: center;
+            border-bottom: 1px solid #eae0c2;
+        }
+        
+        .teacher-table tr:nth-child(even) {
+            background-color: #f5edfa;
         }
         
         /* レスポンシブ調整 */
@@ -472,6 +515,19 @@
             
             .result-comment {
                 font-size: 1.3rem;
+            }
+            
+            .teacher-table {
+                font-size: 0.8rem;
+            }
+            
+            .stat-box {
+                min-width: 100px;
+                padding: 10px;
+            }
+            
+            .stat-value {
+                font-size: 1.5rem;
             }
         }
         
@@ -508,6 +564,48 @@
             right: 8%;
             font-size: 7rem;
             transform: rotate(-8deg);
+        }
+        
+        /* 教師ログイン画面 */
+        .teacher-login {
+            text-align: center;
+            padding: 30px 20px;
+        }
+        
+        .login-title {
+            font-size: 1.8rem;
+            margin-bottom: 25px;
+            color: #8e44ad;
+            font-weight: bold;
+        }
+        
+        .password-input {
+            width: 80%;
+            padding: 14px 18px;
+            font-size: 1.1rem;
+            border: 2px solid #9b59b6;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            font-family: 'Microsoft YaHei', '微软雅黑', sans-serif;
+            background: #f5edfa;
+        }
+        
+        .login-btn {
+            background: linear-gradient(to bottom, #9b59b6, #8e44ad);
+            color: white;
+            border: none;
+            padding: 14px 35px;
+            font-size: 1.15rem;
+            border-radius: 10px;
+            cursor: pointer;
+            font-family: 'Microsoft YaHei', '微软雅黑', sans-serif;
+            transition: all 0.3s;
+            box-shadow: 0 4px 10px rgba(155, 89, 182, 0.3);
+        }
+        
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(155, 89, 182, 0.4);
         }
     </style>
 </head>
@@ -577,24 +675,70 @@
                 <tbody id="data-table-body"></tbody>
             </table>
             
-            <!-- データ集約セクション -->
-            <div class="data-aggregation">
-                <div class="aggregation-title">複数端末データ集約</div>
-                <div class="aggregation-controls">
-                    <textarea id="import-data" class="data-input" rows="4" placeholder="他の端末からエクスポートしたデータを貼り付けてください"></textarea>
-                    <button id="import-btn" class="aggregation-btn">データをインポート</button>
-                    <button id="export-btn" class="aggregation-btn">この端末のデータをエクスポート</button>
-                </div>
-                
-                <div class="aggregated-data" id="aggregated-data">
-                    <!-- 集約データがここに表示されます -->
-                </div>
-            </div>
-            
             <button id="data-back-btn" class="back-btn">戻る</button>
         </div>
         
+        <!-- 教師ログイン画面 -->
+        <div id="teacher-login" class="teacher-section">
+            <div class="teacher-login">
+                <div class="login-title">教師用ダッシュボード</div>
+                <input type="password" id="teacher-password" class="password-input" placeholder="パスワードを入力">
+                <button id="teacher-login-btn" class="login-btn">ログイン</button>
+            </div>
+        </div>
+        
+        <!-- 教師ダッシュボード -->
+        <div id="teacher-dashboard" class="teacher-section">
+            <div class="dashboard-title">全学生テスト結果</div>
+            
+            <div class="stats-container">
+                <div class="stat-box">
+                    <div class="stat-value" id="total-students">0</div>
+                    <div class="stat-label">学生数</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value" id="avg-score">0</div>
+                    <div class="stat-label">平均正解数</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value" id="pass-rate">0%</div>
+                    <div class="stat-label">合格率</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value" id="total-tests">0</div>
+                    <div class="stat-label">テスト回数</div>
+                </div>
+            </div>
+            
+            <div class="difficult-words">
+                <div class="difficult-title">難しい単語トップ5</div>
+                <div class="word-list" id="difficult-words-list">
+                    <!-- 難しい単語リストがここに表示されます -->
+                </div>
+            </div>
+            
+            <div style="margin-top: 25px; overflow-x: auto;">
+                <table class="teacher-table">
+                    <thead>
+                        <tr>
+                            <th>名前</th>
+                            <th>正解数</th>
+                            <th>所要時間</th>
+                            <th>日付</th>
+                            <th>詳細</th>
+                        </tr>
+                    </thead>
+                    <tbody id="teacher-data-body">
+                        <!-- 教師用データがここに表示されます -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <button id="teacher-back-btn" class="back-btn">戻る</button>
+        </div>
+        
         <button id="data-btn" class="data-btn"><i class="fas fa-database"></i> データを見る</button>
+        <button id="teacher-btn" class="teacher-btn"><i class="fas fa-chalkboard-teacher"></i> 教師用</button>
     </div>
 
     <script>
@@ -630,13 +774,17 @@
         let endTime = 0;
         let mistakes = [];
         let gameData = JSON.parse(localStorage.getItem('wordKarutaData')) || [];
-        let aggregatedData = JSON.parse(localStorage.getItem('aggregatedWordKarutaData')) || [];
+        
+        // 教師用パスワード
+        const TEACHER_PASSWORD = "sensei123";
         
         // DOM要素
         const inputScreen = document.getElementById('input-screen');
         const gameScreen = document.getElementById('game-screen');
         const resultScreen = document.getElementById('result-screen');
         const dataScreen = document.getElementById('data-screen');
+        const teacherLogin = document.getElementById('teacher-login');
+        const teacherDashboard = document.getElementById('teacher-dashboard');
         const playerNameInput = document.getElementById('player-name');
         const confirmBtn = document.getElementById('confirm-btn');
         const questionCard = document.getElementById('question-card');
@@ -648,13 +796,19 @@
         const mistakesList = document.getElementById('mistakes-list');
         const restartBtn = document.getElementById('restart-btn');
         const dataBtn = document.getElementById('data-btn');
+        const teacherBtn = document.getElementById('teacher-btn');
         const dataTableBody = document.getElementById('data-table-body');
         const dataBackBtn = document.getElementById('data-back-btn');
         const progressBar = document.getElementById('progress-bar');
-        const importData = document.getElementById('import-data');
-        const importBtn = document.getElementById('import-btn');
-        const exportBtn = document.getElementById('export-btn');
-        const aggregatedDataContainer = document.getElementById('aggregated-data');
+        const teacherPassword = document.getElementById('teacher-password');
+        const teacherLoginBtn = document.getElementById('teacher-login-btn');
+        const teacherBackBtn = document.getElementById('teacher-back-btn');
+        const teacherDataBody = document.getElementById('teacher-data-body');
+        const totalStudents = document.getElementById('total-students');
+        const avgScore = document.getElementById('avg-score');
+        const passRate = document.getElementById('pass-rate');
+        const totalTests = document.getElementById('total-tests');
+        const difficultWordsList = document.getElementById('difficult-words-list');
         
         // 名前確認ボタン
         confirmBtn.addEventListener('click', () => {
@@ -806,7 +960,8 @@
                 name: playerName,
                 correct: correctAnswers,
                 time: `${minutes}分${seconds}秒`,
-                date: dateStr
+                date: dateStr,
+                mistakes: [...mistakes] // 間違いデータも保存
             });
             
             localStorage.setItem('wordKarutaData', JSON.stringify(gameData));
@@ -838,9 +993,6 @@
                 dataTableBody.appendChild(row);
             });
             
-            // 集約データを表示
-            renderAggregatedData();
-            
             dataScreen.style.display = 'block';
         });
         
@@ -849,96 +1001,106 @@
             dataScreen.style.display = 'none';
         });
         
-        // データをエクスポート
-        exportBtn.addEventListener('click', () => {
-            const dataToExport = JSON.stringify(gameData);
-            importData.value = dataToExport;
-            alert('この端末のデータがエクスポートされました。他の端末にコピーしてインポートしてください。');
+        // 教師ボタン
+        teacherBtn.addEventListener('click', () => {
+            teacherLogin.style.display = 'block';
+            teacherPassword.value = '';
         });
         
-        // データをインポート
-        importBtn.addEventListener('click', () => {
-            try {
-                const importedData = JSON.parse(importData.value);
-                
-                if (!Array.isArray(importedData)) {
-                    throw new Error('無効なデータ形式です');
-                }
-                
-                // 現在の集約データに追加
-                aggregatedData = [...aggregatedData, ...importedData];
-                
-                // 重複を削除（シンプルな重複チェック）
-                const uniqueData = [];
-                const seen = new Set();
-                
-                aggregatedData.forEach(item => {
-                    const key = `${item.name}-${item.correct}-${item.time}-${item.date}`;
-                    if (!seen.has(key)) {
-                        seen.add(key);
-                        uniqueData.push(item);
+        // 教師ログイン
+        teacherLoginBtn.addEventListener('click', () => {
+            if (teacherPassword.value === TEACHER_PASSWORD) {
+                teacherLogin.style.display = 'none';
+                teacherDashboard.style.display = 'block';
+                updateTeacherDashboard();
+            } else {
+                alert('パスワードが違います');
+            }
+        });
+        
+        // 教師ダッシュボードの戻るボタン
+        teacherBackBtn.addEventListener('click', () => {
+            teacherDashboard.style.display = 'none';
+        });
+        
+        // 教師ダッシュボードを更新
+        function updateTeacherDashboard() {
+            // データを再読み込み
+            const allData = JSON.parse(localStorage.getItem('wordKarutaData')) || [];
+            
+            // 統計情報を計算
+            const uniqueStudents = [...new Set(allData.map(item => item.name))];
+            const totalTestsCount = allData.length;
+            const totalCorrectSum = allData.reduce((sum, item) => sum + item.correct, 0);
+            const avgCorrect = totalTestsCount > 0 ? (totalCorrectSum / totalTestsCount).toFixed(1) : 0;
+            const passedCount = allData.filter(item => item.correct >= 16).length;
+            const passRateValue = totalTestsCount > 0 ? Math.round((passedCount / totalTestsCount) * 100) : 0;
+            
+            // 統計情報を表示
+            totalStudents.textContent = uniqueStudents.length;
+            totalTests.textContent = totalTestsCount;
+            avgScore.textContent = avgCorrect;
+            passRate.textContent = `${passRateValue}%`;
+            
+            // 難しい単語を分析
+            const wordMistakes = {};
+            allData.forEach(test => {
+                test.mistakes.forEach(mistake => {
+                    if (!wordMistakes[mistake.japanese]) {
+                        wordMistakes[mistake.japanese] = 0;
                     }
+                    wordMistakes[mistake.japanese]++;
                 });
-                
-                aggregatedData = uniqueData;
-                
-                // 保存
-                localStorage.setItem('aggregatedWordKarutaData', JSON.stringify(aggregatedData));
-                
-                // 表示を更新
-                renderAggregatedData();
-                
-                alert('データのインポートが完了しました！');
-            } catch (e) {
-                alert('データのインポートに失敗しました。正しい形式のデータを貼り付けてください。');
-                console.error(e);
-            }
-        });
-        
-        // 集約データを表示
-        function renderAggregatedData() {
-            aggregatedDataContainer.innerHTML = '';
+            });
             
-            if (aggregatedData.length === 0) {
-                aggregatedDataContainer.innerHTML = '<p style="text-align: center; color: #7f8c8d;">集約されたデータがありません</p>';
-                return;
-            }
+            // 間違いが多い順にソート
+            const sortedWords = Object.entries(wordMistakes)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 5);
             
-            // 端末ごとにデータをグループ化
-            const groupedByDevice = aggregatedData.reduce((acc, item) => {
-                if (!acc[item.name]) {
-                    acc[item.name] = [];
-                }
-                acc[item.name].push(item);
-                return acc;
-            }, {});
+            // 難しい単語を表示
+            difficultWordsList.innerHTML = '';
+            sortedWords.forEach(([word, count]) => {
+                const wordTag = document.createElement('div');
+                wordTag.classList.add('word-tag');
+                wordTag.textContent = `${word} (${count}回)`;
+                difficultWordsList.appendChild(wordTag);
+            });
             
-            // 各端末のデータを表示
-            Object.keys(groupedByDevice).forEach(name => {
-                const deviceData = groupedByDevice[name];
-                const totalGames = deviceData.length;
-                const totalCorrect = deviceData.reduce((sum, game) => sum + game.correct, 0);
-                const avgCorrect = (totalCorrect / totalGames).toFixed(1);
-                
-                const deviceEl = document.createElement('div');
-                deviceEl.className = 'device-data';
-                deviceEl.innerHTML = `
-                    <div class="device-name">${name} (${totalGames}回プレイ)</div>
-                    <div class="device-stats">
-                        <span>合計正解数: ${totalCorrect}</span>
-                        <span>平均正解数: ${avgCorrect}</span>
-                    </div>
+            // 詳細データを表示
+            teacherDataBody.innerHTML = '';
+            allData.forEach(data => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${data.name}</td>
+                    <td>${data.correct} / 20</td>
+                    <td>${data.time}</td>
+                    <td>${data.date}</td>
+                    <td><button class="view-details-btn" data-name="${data.name}" data-date="${data.date}">詳細</button></td>
                 `;
-                
-                aggregatedDataContainer.appendChild(deviceEl);
+                teacherDataBody.appendChild(row);
+            });
+            
+            // 詳細ボタンにイベントリスナーを追加
+            document.querySelectorAll('.view-details-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const name = this.getAttribute('data-name');
+                    const date = this.getAttribute('data-date');
+                    showTestDetails(name, date);
+                });
             });
         }
         
-        // 初期化時に集約データを読み込む
-        window.addEventListener('DOMContentLoaded', () => {
-            // 集約データの初期表示
-            renderAggregatedData();
-        });
+        // テスト詳細を表示
+        function showTestDetails(name, date) {
+            const allData = JSON.parse(localStorage.getItem('wordKarutaData')) || [];
+            const test = allData.find(item => item.name === name && item.date === date);
+            
+            if (!test) return;
+            
+            // 詳細データを表示
+            alert(`${name}さんのテスト結果 (${date})\n\n正解数: ${test.correct}/20\n所要時間: ${test.time}\n\n間違えた問題: ${test.mistakes.length}問`);
+        }
     </script>
 </body>
 </html>
