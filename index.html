@@ -759,16 +759,16 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     
     <script>
-        // Firebase設定
+        // Firebase設定 (提供された設定を反映)
         const firebaseConfig = {
             apiKey: "AIzaSyD_nA84VOUWheWGXMo8asKSmva5yf6FOGQ",
             authDomain: "tangowang-b901e.firebaseapp.com",
+            databaseURL: "https://tangowang-b901e-default-rtdb.asia-southeast1.firebasedatabase.app",
             projectId: "tangowang-b901e",
             storageBucket: "tangowang-b901e.firebasestorage.app",
             messagingSenderId: "504618779134",
             appId: "1:504618779134:web:be1a22517ae0ebd70ac0af",
             measurementId: "G-5TT00B5FEV"
-            appId: "1:504618779134:web:be1a22517ae0ebd70ac0af"
         };
         
         // Firebaseの初期化
@@ -806,7 +806,6 @@
         let startTime = 0;
         let endTime = 0;
         let mistakes = [];
-        let gameData = [];
         let userId = "";
         
         // 教師用パスワード
